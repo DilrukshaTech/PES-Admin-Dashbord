@@ -1,7 +1,5 @@
 import { Request, Response } from "express";
-
 import { PrismaClient } from "@prisma/client";
-
 
 const prisma = new PrismaClient();
 
@@ -97,6 +95,36 @@ export const UpdateCategory = async (
     });
 
     res.status(200).json({ updatedCategory });
+  } catch (error: any) {
+    res.status(500).json({ error: error.message || "Internal server error" });
+    throw error;
+  }
+};
+
+export const DeleteCategory = async (
+  req: Request,
+  res: Response
+): Promise<void> => {
+  try {
+    if (
+      !(await prisma.category.findUnique({
+        where: {
+          id: parseInt(req.params.id),
+        },
+      }))
+    ) {
+      res.status(404).json({ error: "Category not found" });
+    }
+
+    const deletedCategory = await prisma.category.delete({
+      where: {
+        id: parseInt(req.params.id),
+      },
+    });
+
+    res
+      .status(204)
+      .json({ deletedCategory, message: "Category deleted succesfuly" });
   } catch (error: any) {
     res.status(500).json({ error: error.message || "Internal server error" });
     throw error;
